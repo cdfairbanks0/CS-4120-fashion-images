@@ -7,10 +7,16 @@ def loadData(root='data'):
     testData = FashionMNIST(root=root, train=False, download=True)
     return trainData, testData
 
-def splitTrainVal(dataset, val_size=0.2, seed=42):
-    labels = np.array(dataset.targets)
-    labelArrange = np.arrange(len(labels))
-    train_x, val_x = train_test_split(
-        labelArrange, test_size=val_size, stratify=labels, random_state=seed
-    )
-    return train_x, val_x
+def splitTrainVal(X, y):
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+    return X_train, X_val, y_train, y_val
+
+def convertDatasetToArray(dataset):
+    X = []
+    y = []
+    for img, label in dataset:
+        X.append(np.array(img).flatten()) #flatten image data
+        y.append(label)
+    X = np.array(X)
+    y = np.array(y)
+    return X, y

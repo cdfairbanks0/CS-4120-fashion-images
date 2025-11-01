@@ -1,1 +1,3 @@
 venv/
+data/FashionMNIST/
+src/__pycache__/
