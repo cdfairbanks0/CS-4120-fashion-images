@@ -26,7 +26,7 @@ for i in range(9):
 plt.show()
 
 # %%
-labels = np.array(trainData.targets)
+labels = trainData.targets.numpy()
 plt.figure(figsize=(8, 4))
 plt.bar(range(10), np.bincount(labels))
 plt.xticks(range(10), classNames, rotation=45)
