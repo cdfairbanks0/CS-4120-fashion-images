@@ -2,15 +2,15 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_error
 import mlflow
 from mlflow.models import infer_signature
 
 
-from features import getTrainValidateSplits, getScaledFeaturesLogReg
+from features import getTrainValidateSplits, getScaledFeaturesLogReg, getRegressionData
 
 
 def trainLogisticRegression():
@@ -47,7 +47,7 @@ def trainLogisticRegression():
         )
     return y_validate, y_pred
 
-def trainDecisionTree():
+def trainDecisionTreeClassifier():
     X_train, X_validate, y_train, y_validate = getTrainValidateSplits()
     model = DecisionTreeClassifier(max_depth = 15, random_state = 42)
     model.fit(X_train, y_train)
@@ -57,5 +57,28 @@ def trainDecisionTree():
     print("Validation set accuracy for DT:", accuracy)
     return y_validate, y_pred
 
+
+def trainLinearRegression():
+    X_train, X_validate, y_train, y_validate = getRegressionData()
+
+    model = LinearRegression()
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_validate)
+
+    return y_validate, y_pred
+
+
+def trainDecisionTreeRegressor():
+    X_train, X_validate, y_train, y_validate = getRegressionData()
+
+    model = DecisionTreeRegressor(max_depth = 15, random_state=42)
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_validate)
+
+    return y_validate, y_pred # might want to consider returning the model
+
+
 #trainLogisticRegression()
 #trainDecisionTree()
+#trainLinearRegression()
+#trainDecisionTreeRegressor()
