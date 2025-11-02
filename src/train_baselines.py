@@ -42,39 +42,86 @@ def trainLogisticRegression():
         mlflow.sklearn.log_model(
             sk_model=model,
             signature=signature,
-            name="fashion_mnist_lr_model",
+            name="fashion_mnist_logreg_model",
             input_example=X_train_scaled
         )
     return y_validate, y_pred
 
 def trainDecisionTreeClassifier():
+    mlflow.set_experiment("MLflow Classification Tracking")
+
     X_train, X_validate, y_train, y_validate = getTrainValidateSplits()
     model = DecisionTreeClassifier(max_depth = 15, random_state = 42)
-    model.fit(X_train, y_train)
 
-    y_pred = model.predict(X_validate)
-    accuracy = accuracy_score(y_validate, y_pred)
-    print("Validation set accuracy for DT:", accuracy)
+    with mlflow.start_run():
+        mlflow.log_param("model_type", "DecisionTreeClassifier")
+        mlflow.log_param("max_depth", "15")
+        mlflow.log_param("random_state", "42")
+
+        model.fit(X_train, y_train)
+
+        y_pred = model.predict(X_validate)
+
+        signature = infer_signature(X_validate, y_pred)
+
+        accuracy = accuracy_score(y_validate, y_pred)
+        mlflow.log_metric("accuracy", accuracy)
+        print("Validation set accuracy for DT:", accuracy)
+
+        mlflow.sklearn.log_model(
+            sk_model=model,
+            signature=signature,
+            name="fashion_mnist_dt_classifier_model",
+            input_example=X_train
+        )
+
     return y_validate, y_pred
 
 
 def trainLinearRegression():
+    mlflow.set_experiment("MLflow Regression Tracking")
     X_train, X_validate, y_train, y_validate = getRegressionData()
 
     model = LinearRegression()
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_validate)
+    with mlflow.start_run():
+        mlflow.log_param("model_type", "LinearRegression")
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_validate)
+
+        signature = infer_signature(X_validate, y_pred)
+
+        mlflow.sklearn.log_model(
+            sk_model=model,
+            signature=signature,
+            name="fashion_mnist_linreg_model",
+            input_example=X_train
+        )
 
     return y_validate, y_pred
 
 
 def trainDecisionTreeRegressor():
+    mlflow.set_experiment("MLflow Regression Tracking")
     X_train, X_validate, y_train, y_validate = getRegressionData()
 
     model = DecisionTreeRegressor(max_depth = 15, random_state=42)
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_validate)
+    with mlflow.start_run():
+        mlflow.log_param("model_type", "DecisionTreeRegressor")
+        mlflow.log_param("max_depth", "15")
+        mlflow.log_param("random_state", "42")
 
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_validate)
+
+        signature = infer_signature(X_validate, y_pred)
+
+        mlflow.sklearn.log_model(
+            sk_model=model,
+            signature=signature,
+            name="fashion_mnist_dt_regressor_model",
+            input_example=X_train
+        )
+    
     return y_validate, y_pred # might want to consider returning the model
 
 

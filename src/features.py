@@ -1,7 +1,6 @@
 from data import loadData, splitTrainVal, convertDatasetToArray
 from sklearn.model_selection import train_test_split
 import numpy as np
-import pandas as pd
 
 train_data, test_data = loadData()
 
@@ -19,19 +18,14 @@ def getTrainValidateSplits():
     return X_train, X_val, y_train, y_val
 
 def getRegressionData():
-    #labels = []
     means = []
     images = []
     for image, label in train_data:
         arr = np.array(image)
         means.append(arr.mean())
-        #labels.append(label)
         images.append(np.array(image).flatten())
 
     X = np.array(images)
     y = np.array(means)
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
     return X_train, X_val, y_train, y_val
-
-
-getRegressionData()

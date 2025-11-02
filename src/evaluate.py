@@ -16,12 +16,6 @@ class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat', 'Sandal', 
 report = classification_report(y_test, y_pred, target_names=class_names)
 print(report)
 
-# Test and prediction sets from training decision tree model
-y_DTtest, y_DTpred = trainDecisionTreeClassifier()
-
-# Classification report for decision tree
-report = classification_report(y_DTtest, y_DTpred, target_names=class_names)
-print(report)
 
 def runPlot3ConfusionLogreg():
     logConfusionMatrix(
@@ -33,6 +27,15 @@ def runPlot3ConfusionLogreg():
     mlflow.end_run()
 
 runPlot3ConfusionLogreg()
+
+# Test and prediction sets from training decision tree model
+y_DTtest, y_DTpred = trainDecisionTreeClassifier()
+
+# Classification report for decision tree
+report = classification_report(y_DTtest, y_DTpred, target_names=class_names)
+print(report)
+
+mlflow.end_run()
 
 # MAE and RMSE for decision tree regressor
 y_validate, y_pred = trainDecisionTreeRegressor()
@@ -51,6 +54,7 @@ plt.ylabel("Residuals")
 plt.title("Residuals vs Predicted Values")
 plt.show()
 
+mlflow.end_run()
 
 
 
@@ -70,3 +74,5 @@ plt.xlabel("Predicted Brightness")
 plt.ylabel("Residuals")
 plt.title("Residuals vs Predicted Values")
 plt.show()
+
+mlflow.end_run()

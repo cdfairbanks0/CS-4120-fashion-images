@@ -1,0 +1,6 @@
+ipykernel==7.1.0
+mlflow==3.5.1
+numpy==2.2.6
+pandas==2.3.3
+scikit-learn==1.7.2
+torchvision==0.24.0
