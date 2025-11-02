@@ -1,5 +1,9 @@
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-
+from sklearn.metrics import accuracy_score, classification_report
+import matplotlib.pyplot as plt
+import mlflow
+import numpy as np
+from data import loadData
+from utils import logConfusionMatrix
 from train_baselines import trainLogisticRegression, trainDecisionTree
 
 # Test and prediction sets from training logistic regression model
@@ -13,8 +17,19 @@ report = classification_report(y_test, y_pred, target_names=class_names)
 print(report)
 
 # Test and prediction sets from training decision tree model
-y_test, y_pred = trainDecisionTree()
+y_DTtest, y_DTpred = trainDecisionTree()
 
 # Classification report for decision tree
-report = classification_report(y_test, y_pred, target_names=class_names)
+report = classification_report(y_DTtest, y_DTpred, target_names=class_names)
 print(report)
+
+def runPlot3ConfusionLogreg():
+    logConfusionMatrix(
+        y_test,
+        y_pred,
+        class_names,
+        title="Plot 3 – Confusion Matrix (Logistic Regression, Test Set)"
+    )
+    mlflow.end_run()
+
+runPlot3ConfusionLogreg()
