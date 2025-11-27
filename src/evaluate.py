@@ -1,11 +1,12 @@
 from sklearn.metrics import accuracy_score, classification_report, mean_absolute_error, mean_squared_error
 import matplotlib.pyplot as plt
 import mlflow
+from mlflow.tracking import MlflowClient
 import numpy as np
 from data import loadData
 from utils import logConfusionMatrix
 from train_baselines import trainLogisticRegression, trainDecisionTreeClassifier, trainDecisionTreeRegressor, trainLinearRegression
-
+"""
 # Test and prediction sets from training logistic regression model
 y_test, y_pred = trainLogisticRegression()
 
@@ -76,3 +77,31 @@ plt.title("Residuals vs Predicted Values")
 plt.show()
 
 mlflow.end_run()
+"""
+def plot_cnn_learning_curve_for_latest_run():
+    client = MlflowClient()
+    exp = client.get_experiment_by_name("MLflow Classification Tracking")
+    if exp is None:
+        print("Experiment 'MLflow Classification Tracking' not found")
+        return
+    runs = client.search_runs([exp.experiment_id], order_by=["attributes.start_time DESC"], max_results=1)
+    if len(runs) == 0:
+        print("No runs found in experiment 'MLflow Classification Tracking'.")
+        return
+    run_id = runs[0].info.run_id
+    print("Using CNN Run Id:", run_id)
+    train_hist = client.get_metric_history(run_id, "train_accuracy")
+    val_hist = client.get_metric_history(run_id, "val_accuracy")
+    train_values = [m.value for m in train_hist]
+    val_values = [m.value for m in val_hist]
+    epochs = range(1, len(train_values) + 1)
+    plt.figure()
+    plt.plot(epochs, train_values, label="Train accuracy")
+    plt.plot(epochs, val_values, label="Validation accuracy")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.title("Plot 1 – Classification NN Learning Curve")
+    plt.legend()
+    plt.show()
+
+plot_cnn_learning_curve_for_latest_run()
