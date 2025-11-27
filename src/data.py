@@ -20,3 +20,13 @@ def convertDatasetToArray(dataset):
     X = np.array(X)
     y = np.array(y)
     return X, y
+
+def convertDatasetToArrayCNN(dataset):
+    X = []
+    y = []
+    for img, label in dataset:
+        X.append(img)
+        y.append(label)
+    X = np.array(X)
+    y = np.array(y)
+    return X, y

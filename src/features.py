@@ -1,4 +1,4 @@
-from data import loadData, splitTrainVal, convertDatasetToArray
+from data import loadData, splitTrainVal, convertDatasetToArray, convertDatasetToArrayCNN
 from sklearn.model_selection import train_test_split
 import numpy as np
 
@@ -28,4 +28,14 @@ def getRegressionData():
     X = np.array(images)
     y = np.array(means)
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+    return X_train, X_val, y_train, y_val
+
+
+def getCNNData():
+    X, y = convertDatasetToArrayCNN(train_data)
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train = X_train / 255.0
+    X_val = X_val / 255.0
+    X_train = X_train.reshape(-1, 28, 28, 1)
+    X_val = X_val.reshape(-1, 28, 28, 1)
     return X_train, X_val, y_train, y_val

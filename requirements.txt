@@ -4,3 +4,4 @@ numpy==2.2.6
 pandas==2.3.3
 scikit-learn==1.7.2
 torchvision==0.24.0
+tensorflow==2.20.0
