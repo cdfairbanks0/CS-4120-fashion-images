@@ -31,11 +31,23 @@ def getRegressionData():
     return X_train, X_val, y_train, y_val
 
 
-def getCNNData():
+""" def getCNNData():
     X, y = convertDatasetToArrayCNN(train_data)
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
     X_train = X_train / 255.0
     X_val = X_val / 255.0
     X_train = X_train.reshape(-1, 28, 28, 1)
     X_val = X_val.reshape(-1, 28, 28, 1)
-    return X_train, X_val, y_train, y_val
+    return X_train, X_val, y_train, y_val """
+
+def getCNNData():
+    X, y = convertDatasetToArrayCNN(train_data)
+    X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=42)
+    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+    X_train = X_train / 255.0
+    X_val = X_val / 255.0
+    X_test = X_test / 255.0
+    X_train = X_train.reshape(-1, 28, 28, 1)
+    X_val = X_val.reshape(-1, 28, 28, 1)
+    X_test  = X_test.reshape(-1, 28, 28, 1)
+    return X_train, X_val, X_test, y_train, y_val, y_test
