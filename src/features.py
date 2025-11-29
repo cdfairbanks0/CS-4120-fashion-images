@@ -1,5 +1,6 @@
 from data import loadData, splitTrainVal, convertDatasetToArray, convertDatasetToArrayCNN
 from sklearn.model_selection import train_test_split
+import tensorflow as tf
 import numpy as np
 
 train_data, test_data = loadData()
@@ -44,10 +45,7 @@ def getClassificationCNNData():
     X, y = convertDatasetToArrayCNN(train_data)
     X_test, y_test = convertDatasetToArrayCNN(test_data)
 
-    #y = np.array([img.mean() for img in X])
-    #y_test = np.array([img.mean() for img in X_test])
-
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.15, random_state=42)
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
 
 
     #X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)

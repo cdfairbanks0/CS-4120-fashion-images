@@ -77,38 +77,43 @@ def trainClassificationCNN():
     print("y_val shape:", y_val.shape)
     print("y_test shape:", y_test.shape)
 
+    regulizer = tf.keras.regularizers.l2(0.0003)
+
+    early_stop = tf.keras.callbacks.EarlyStopping(
+        monitor='val_loss',
+        patience=5,
+        restore_best_weights=True
+    )
+
     model = models.Sequential()
 
-    model.add(layers.Conv2D(28, (3, 3), activation='relu', input_shape=(28, 28, 1)))
-    #model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1), kernel_regularizer=regulizer))
     model.add(layers.BatchNormalization())
 
-    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-    #model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(32, (3, 3), activation='relu', kernel_regularizer=regulizer))
     model.add(layers.BatchNormalization())
     model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Dropout(0.25))
 
-    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+    model.add(layers.Conv2D(64, (3, 3), activation='relu', kernel_regularizer=regulizer))
     model.add(layers.BatchNormalization())
-
-    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-    #model.add(layers.MaxPooling2D((2, 2)))
+    
+    model.add(layers.Conv2D(64, (3, 3), activation='relu', kernel_regularizer=regulizer))
     model.add(layers.BatchNormalization())
     model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Dropout(0.25))
 
     model.add(layers.Flatten())
 
-    
-
     model.add(layers.Dense(128, activation='relu'))
-    model.add(layers.Dropout(0.3))
+    model.add(layers.BatchNormalization())
+    model.add(layers.Dropout(0.5))
     model.add(layers.Dense(10, activation='softmax')) #output layer
 
     model.summary()
 
     model.compile(
         optimizer="adam",
-        #loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         loss="sparse_categorical_crossentropy",
         metrics=["accuracy"]
     )
@@ -127,9 +132,10 @@ def trainClassificationCNN():
         history = model.fit(
             X_train,
             y_train,
-            epochs=15,
+            epochs=30,
             batch_size=64,
             validation_data=(X_val, y_val),
+            callbacks=[early_stop],
             verbose=1
         )
 
