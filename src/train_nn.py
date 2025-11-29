@@ -1,49 +1,183 @@
 import tensorflow as tf
+import keras_tuner
 import numpy as np
 import mlflow
 from tensorflow.keras import layers, models
 from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_error, f1_score
-from features import getCNNData
+from features import getClassificationCNNData, getRegressionCNNData
+
+def build_model(hyperparam):
+    model = models.Sequential()
+
+    # hyperparams
+    hp_filter1 = hyperparam.Choice("filters_1", values=[16, 32, 48])
+    hp_filter2 = hyperparam.Choice("filters_2", values=[32, 64, 96])
+    hp_filter3 = hyperparam.Choice("filters_3", values=[32, 64])
+    hp_dense = hyperparam.Choice("dense_units", values=[32, 64, 128])
+    hp_learning_rate = hyperparam.Choice("learning_rate", [0.01, 0.001, 0.0001])
 
 
-X_train, X_val, x_test, y_train, y_val, y_test = getCNNData()
+    model.add(layers.Conv2D(hp_filter1, (3, 3), activation='relu', input_shape=(28, 28, 1)))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(hp_filter2, (3, 3), activation='relu'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(hp_filter3, (3, 3), activation='relu'))
+    model.add(layers.Flatten())
+    model.add(layers.Dense(hp_dense, activation='relu'))
+    model.add(layers.Dense(10, activation='softmax')) #output
 
-print("X_train shape:", X_train.shape)
-print("y_train shape:", y_train.shape)
-print("X_test shape:", x_test.shape)
-print("X_val shape:", X_val.shape)
-print("y_val shape:", y_val.shape)
-print("y_test shape:", y_test.shape)
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=hp_learning_rate),
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"]
+    )
 
-model = models.Sequential()
+    return model
 
-model.add(layers.Conv2D(28, (3, 3), activation='relu', input_shape=(28, 28, 1)))
-model.add(layers.MaxPooling2D((2, 2)))
-model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-model.add(layers.MaxPooling2D((2, 2)))
-model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-model.add(layers.Flatten())
-model.add(layers.Dense(64, activation='relu'))
-model.add(layers.Dense(10)) #output layer
+def trainClassificationCNNHyperparameters():
+    print("meow")
 
-model.summary()
+    X_train, X_val, x_test, y_train, y_val, y_test = getClassificationCNNData()
 
-model.compile(
-    optimizer="adam",
-    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-    metrics=["accuracy"]
-)
+    tuner = keras_tuner.GridSearch(
+        hypermodel=build_model,
+        objective="val_accuracy",
+        max_trials=20,
+        overwrite=True
+    )
 
-mlflow.set_experiment("MLflow Classification Tracking")
-with mlflow.start_run(run_name="cnn_classification"):
-    mlflow.log_param("model_type", "CNN")
-    mlflow.log_param("conv1_filters", 28)
-    mlflow.log_param("conv2_filters", 64)
-    mlflow.log_param("conv3_filters", 64)
-    mlflow.log_param("dense_units", 64)
-    mlflow.log_param("epochs", 15)
-    mlflow.log_param("batch_size", 64)
-    mlflow.log_param("optimizer", "adam")
+    tuner.search(
+        X_train,
+        y_train,
+        epochs=15,
+        batch_size=64,
+        validation_data=(X_val, y_val),
+        verbose=1
+    )
+
+    best_hyperparams = tuner.get_best_hyperparameters(1)[0]
+    best_model = tuner.get_best_models(1)[0]
+
+    y_pred = best_model.predict(X_val).argmax(axis=1)
+    accuracy = accuracy_score(y_val, y_pred)
+    f1 = f1_score(y_val, y_pred, average="weighted")
+
+    print("Validation set accuracy for CNN:", accuracy)
+    print("Validation set f1 for CNN:", f1)
+    
+
+
+def trainClassificationCNN():
+    X_train, X_val, x_test, y_train, y_val, y_test = getClassificationCNNData()
+
+    print("X_train shape:", X_train.shape)
+    print("y_train shape:", y_train.shape)
+    print("X_test shape:", x_test.shape)
+    print("X_val shape:", X_val.shape)
+    print("y_val shape:", y_val.shape)
+    print("y_test shape:", y_test.shape)
+
+    model = models.Sequential()
+
+    model.add(layers.Conv2D(28, (3, 3), activation='relu', input_shape=(28, 28, 1)))
+    #model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.BatchNormalization())
+
+    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+    #model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.BatchNormalization())
+    model.add(layers.MaxPooling2D((2, 2)))
+
+    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+    model.add(layers.BatchNormalization())
+
+    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+    #model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.BatchNormalization())
+    model.add(layers.MaxPooling2D((2, 2)))
+
+    model.add(layers.Flatten())
+
+    
+
+    model.add(layers.Dense(128, activation='relu'))
+    model.add(layers.Dropout(0.3))
+    model.add(layers.Dense(10, activation='softmax')) #output layer
+
+    model.summary()
+
+    model.compile(
+        optimizer="adam",
+        #loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    mlflow.set_experiment("MLflow Classification Tracking")
+    with mlflow.start_run(run_name="cnn_classification"):
+        mlflow.log_param("model_type", "CNN")
+        mlflow.log_param("conv1_filters", 28)
+        mlflow.log_param("conv2_filters", 64)
+        mlflow.log_param("conv3_filters", 64)
+        mlflow.log_param("dense_units", 64)
+        mlflow.log_param("epochs", 15)
+        mlflow.log_param("batch_size", 64)
+        mlflow.log_param("optimizer", "adam")
+
+        history = model.fit(
+            X_train,
+            y_train,
+            epochs=15,
+            batch_size=64,
+            validation_data=(X_val, y_val),
+            verbose=1
+        )
+
+        for epoch, (acc, val_acc) in enumerate(zip(history.history["accuracy"],
+                                                history.history["val_accuracy"])):
+            mlflow.log_metric("train_accuracy", acc, step=epoch)
+            mlflow.log_metric("val_accuracy", val_acc, step=epoch)
+
+        y_pred = model.predict(X_val).argmax(axis=1)
+        accuracy = accuracy_score(y_val, y_pred)
+        f1 = f1_score(y_val, y_pred, average="weighted")
+        print("Validation set accuracy for CNN:", accuracy)
+        print("Validation set f1 for CNN:", f1)
+        mlflow.log_metric("val_accuracy_final", float(accuracy))
+        mlflow.log_metric("val_f1", float(f1))
+
+
+        '''
+        y_test_pred = model.predict(x_test).argmax(axis=1)
+        test_accuracy = accuracy_score(y_test, y_test_pred)
+        test_f1 = f1_score(y_test, y_test_pred, average="weighted")
+        print("Test set accuracy for CNN:", test_accuracy)
+        print("Test set f1 for CNN:", test_f1)
+        mlflow.log_metric("test_accuracy", float(test_accuracy))
+        mlflow.log_metric("test_f1", float(test_f1))
+        '''
+
+
+def trainRegressionCNN():
+    X_train, X_val, x_test, y_train, y_val, y_test = getRegressionCNNData()
+
+    model = models.Sequential()
+
+    model.add(layers.Conv2D(28, (3, 3), activation='relu', input_shape=(28, 28, 1)))
+    model.add(layers.MaxPooling2D((2, 2)))
+    #model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+    #model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Flatten())
+    model.add(layers.Dense(64, activation='relu'))
+    model.add(layers.Dense(1)) #output layer
+
+    model.summary()
+
+    model.compile(
+        optimizer="adam",
+        loss="mse",
+        metrics=["mae"]
+    )
 
     history = model.fit(
         X_train,
@@ -54,23 +188,11 @@ with mlflow.start_run(run_name="cnn_classification"):
         verbose=1
     )
 
-    for epoch, (acc, val_acc) in enumerate(zip(history.history["accuracy"],
-                                            history.history["val_accuracy"])):
-        mlflow.log_metric("train_accuracy", acc, step=epoch)
-        mlflow.log_metric("val_accuracy", val_acc, step=epoch)
+    y_pred = model.predict(X_val).flatten()
+    mae = mean_absolute_error(y_val, y_pred)
+    mse = mean_squared_error(y_val, y_pred)
 
-    y_pred = model.predict(X_val).argmax(axis=1)
-    accuracy = accuracy_score(y_val, y_pred)
-    f1 = f1_score(y_val, y_pred, average="weighted")
-    print("Validation set accuracy for CNN:", accuracy)
-    print("Validation set f1 for CNN:", f1)
-    mlflow.log_metric("val_accuracy_final", float(accuracy))
-    mlflow.log_metric("val_f1", float(f1))
 
-    y_test_pred = model.predict(x_test).argmax(axis=1)
-    test_accuracy = accuracy_score(y_test, y_test_pred)
-    test_f1 = f1_score(y_test, y_test_pred, average="weighted")
-    print("Test set accuracy for CNN:", test_accuracy)
-    print("Test set f1 for CNN:", test_f1)
-    mlflow.log_metric("test_accuracy", float(test_accuracy))
-    mlflow.log_metric("test_f1", float(test_f1))
+#trainRegressionCNN()
+#trainClassificationCNNHyperparameters()
+trainClassificationCNN()

@@ -21,7 +21,7 @@ def convertDatasetToArray(dataset):
     y = np.array(y)
     return X, y
 
-def convertDatasetToArrayCNN(dataset):
+def convertDatasetToArrayCNN(dataset): # for unflattened image data
     X = []
     y = []
     for img, label in dataset:
