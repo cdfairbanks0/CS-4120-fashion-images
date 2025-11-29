@@ -138,8 +138,8 @@ def trainClassificationCNN():
         metrics=["accuracy"]
     )
 
-    mlflow.set_experiment("MLflow Classification Tracking")
-    with mlflow.start_run(run_name="cnn_classification"):
+    mlflow.set_experiment("MLflow CNN Classification Tracking")
+    with mlflow.start_run(run_name="cnn_classification", nested=False):
 
         mlflow.log_param("model_type", "CNN")
         mlflow.log_param("conv1_filters", 32)
@@ -217,8 +217,8 @@ def trainRegressionCNN():
         metrics=["mae"]
     )
 
-    mlflow.set_experiment("MLflow Regression Tracking")
-    with mlflow.start_run(run_name="cnn_regression"):
+    mlflow.set_experiment("MLflow CNN Regression Tracking")
+    with mlflow.start_run(run_name="cnn_regression", nested=False):
 
         mlflow.log_param("model_type", "CNN")
         mlflow.log_param("conv1_filters", 28)

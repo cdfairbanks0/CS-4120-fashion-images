@@ -103,7 +103,7 @@ mlflow.end_run()
 
 def plot_cnn_learning_curve_for_latest_run_classification():
     client = MlflowClient()
-    exp = client.get_experiment_by_name("MLflow Classification Tracking")
+    exp = client.get_experiment_by_name("MLflow CNN Classification Tracking")
     if exp is None:
         print("Experiment 'MLflow Classification Tracking' not found")
         return
@@ -139,7 +139,7 @@ def plot_cnn_learning_curve_for_latest_run_classification():
 
 def plot_cnn_learning_curve_for_latest_run_regression():
     client = MlflowClient()
-    exp = client.get_experiment_by_name("MLflow Regression Tracking")
+    exp = client.get_experiment_by_name("MLflow CNN Regression Tracking")
     if exp is None:
         print("Experiment 'MLflow Regression Tracking' not found")
         return
