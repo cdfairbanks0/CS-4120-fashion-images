@@ -151,7 +151,7 @@ def trainClassificationCNN():
         mlflow.log_param("epochs", 15)
         mlflow.log_param("batch_size", 64)
         mlflow.log_param("optimizer", "adam")
-        mlflow.log_param("learning rate", "0.001")
+        mlflow.log_param("learning rate", "0.0005")
         mlflow.log_param("dropout_rates", "0.25, 0.25, 0.5")
 
 

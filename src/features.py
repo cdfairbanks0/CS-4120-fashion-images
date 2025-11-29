@@ -18,6 +18,9 @@ def getScaledFeaturesLogReg(X_train_in, X_eval_in):
 def getTrainValidateSplits():
     return X_train, X_val, y_train, y_val
 
+def getTestSet():
+    return X_test, y_test
+
 def getRegressionData():
     means = []
     images = []
@@ -46,7 +49,7 @@ def getClassificationCNNData():
     X_test, y_test = convertDatasetToArrayCNN(test_data)
 
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
-    
+
     X_train = X_train / 255.0
     X_val = X_val / 255.0
     X_test = X_test / 255.0

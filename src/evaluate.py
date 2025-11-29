@@ -1,4 +1,4 @@
-from sklearn.metrics import accuracy_score, classification_report, mean_absolute_error, mean_squared_error
+from sklearn.metrics import accuracy_score, classification_report, mean_absolute_error, mean_squared_error, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.inspection import permutation_importance
 import matplotlib.pyplot as plt
 import mlflow
@@ -9,17 +9,27 @@ from data import loadData
 from utils import logConfusionMatrix
 from train_baselines import trainLogisticRegression, trainDecisionTreeClassifier, trainDecisionTreeRegressor, trainLinearRegression
 from train_nn import trainClassificationCNN, trainRegressionCNN
-from features import getClassificationCNNData, getRegressionCNNData
+from features import getClassificationCNNData, getRegressionCNNData, getTestSet, getScaledFeaturesLogReg
 
 
 # Test and prediction sets from training logistic regression model
 X_train, X_validate, y_validate, y_pred, logreg_model = trainLogisticRegression()
+X_test, y_test = getTestSet()
+X_test = X_test / 255.0
+
+y_test_predictions = logreg_model.predict(X_test)
+accuracy = accuracy_score(y_test, y_test_predictions)
+print("Logistic regression test set accuracy: ", accuracy)
 
 # Class labels for Fashion MNIST
 class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat', 'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
 
 # Classification report (precision, recall, f1-score per class) for logistic regression
 report = classification_report(y_validate, y_pred, target_names=class_names)
+print(report)
+
+# Classification report (precision, recall, f1-score per class) for logistic regression test set
+report = classification_report(y_test, y_test_predictions, target_names=class_names)
 print(report)
 
 
@@ -73,6 +83,15 @@ print(report)
 report = classification_report(CNN_y_test, CNN_y_test_pred, target_names=class_names)
 print("classification report CNN classification test set")
 print(report)
+
+confusion_mat = confusion_matrix(CNN_y_test, CNN_y_test_pred)
+
+display = ConfusionMatrixDisplay(confusion_matrix=confusion_mat, display_labels=class_names)
+
+plt.figure(figsize=(8,8))
+display.plot(cmap="Blues", values_format="d")
+plt.title("Confusion Matrix – CNN Classification (Test Set)")
+plt.show()
 
 
 
