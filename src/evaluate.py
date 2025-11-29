@@ -3,10 +3,14 @@ import matplotlib.pyplot as plt
 import mlflow
 from mlflow.tracking import MlflowClient
 import numpy as np
+import tensorflow as tf
 from data import loadData
 from utils import logConfusionMatrix
 from train_baselines import trainLogisticRegression, trainDecisionTreeClassifier, trainDecisionTreeRegressor, trainLinearRegression
-"""
+from train_nn import trainClassificationCNN, trainRegressionCNN
+from features import getClassificationCNNData, getRegressionCNNData
+
+
 # Test and prediction sets from training logistic regression model
 y_test, y_pred = trainLogisticRegression()
 
@@ -29,6 +33,19 @@ def runPlot3ConfusionLogreg():
 
 runPlot3ConfusionLogreg()
 
+
+model = tf.keras.models.load_model("models/cnn_classification_model.keras")
+X_train, X_val, x_test, y_train, CNN_y_val, CNN_y_test = getClassificationCNNData()
+
+CNN_y_pred = model.predict(X_val).argmax(axis=1)
+CNN_y_test_pred = model.predict(x_test).argmax(axis=1)
+#CNN_y_pred, CNN_y_val, CNN_y_test_pred, CNN_y_test = trainClassificationCNN()
+
+report = classification_report(CNN_y_test, CNN_y_test_pred, target_names=class_names)
+print(report)
+
+
+
 # Test and prediction sets from training decision tree model
 y_DTtest, y_DTpred = trainDecisionTreeClassifier()
 
@@ -37,6 +54,8 @@ report = classification_report(y_DTtest, y_DTpred, target_names=class_names)
 print(report)
 
 mlflow.end_run()
+
+
 
 # MAE and RMSE for decision tree regressor
 y_validate, y_pred = trainDecisionTreeRegressor()
@@ -59,6 +78,8 @@ mlflow.end_run()
 
 
 
+
+
 # MAE and RMSE for linear regression model
 y_validate, y_pred = trainLinearRegression()
 
@@ -77,21 +98,32 @@ plt.title("Residuals vs Predicted Values")
 plt.show()
 
 mlflow.end_run()
-"""
+
+
+
 def plot_cnn_learning_curve_for_latest_run_classification():
     client = MlflowClient()
     exp = client.get_experiment_by_name("MLflow Classification Tracking")
     if exp is None:
         print("Experiment 'MLflow Classification Tracking' not found")
         return
+    
     runs = client.search_runs([exp.experiment_id], order_by=["attributes.start_time DESC"], max_results=1)
     if len(runs) == 0:
         print("No runs found in experiment 'MLflow Classification Tracking'.")
         return
+    
     run_id = runs[0].info.run_id
     print("Using CNN Run Id:", run_id)
+
     train_hist = client.get_metric_history(run_id, "train_accuracy")
     val_hist = client.get_metric_history(run_id, "val_accuracy")
+
+    if not train_hist or not val_hist:
+        print("Missing accuracy metrics for this run.")
+        print("Make sure you're logging train_accuracy and val_accuracy in your CNN training function.")
+        return
+
     train_values = [m.value for m in train_hist]
     val_values = [m.value for m in val_hist]
     epochs = range(1, len(train_values) + 1)

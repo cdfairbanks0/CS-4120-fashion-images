@@ -99,7 +99,7 @@ def trainClassificationCNN():
 
     early_stop = tf.keras.callbacks.EarlyStopping(
         monitor='val_loss',
-        patience=5,
+        patience=6,
         restore_best_weights=True
     )
 
@@ -181,7 +181,8 @@ def trainClassificationCNN():
         mlflow.log_metric("val_f1", float(f1))
 
 
-        '''
+        # only used after we tuned our hyperparameters and network on the validation set
+        
         y_test_pred = model.predict(x_test).argmax(axis=1)
         test_accuracy = accuracy_score(y_test, y_test_pred)
         test_f1 = f1_score(y_test, y_test_pred, average="weighted")
@@ -189,7 +190,12 @@ def trainClassificationCNN():
         print("Test set f1 for CNN:", test_f1)
         mlflow.log_metric("test_accuracy", float(test_accuracy))
         mlflow.log_metric("test_f1", float(test_f1))
-        '''
+    mlflow.end_run()
+
+    model.save("models/cnn_classification_model.keras")
+
+    return y_pred, y_val, y_test_pred, y_test
+        
 
 
 def trainRegressionCNN():
@@ -245,8 +251,11 @@ def trainRegressionCNN():
 
         mlflow.log_metric("val_mae_final", float(mae))
         mlflow.log_metric("val_mse_final", float(mse))
+    mlflow.end_run()
+
+    model.save("models/cnn_regression_model.keras")
 
 
-trainRegressionCNN()
-trainClassificationCNN()
-trainClassificationCNNHyperparameters()
+#trainRegressionCNN()
+#trainClassificationCNN()
+#trainClassificationCNNHyperparameters()
