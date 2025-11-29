@@ -245,17 +245,27 @@ def trainRegressionCNN():
         y_pred = model.predict(X_val).flatten()
         mae = mean_absolute_error(y_val, y_pred)
         mse = mean_squared_error(y_val, y_pred)
+        rse = np.sqrt(mse)
 
         print("Validation MAE:", mae)
         print("Validation MSE:", mse)
+        print("Validation on RMSE:", rse)
 
         mlflow.log_metric("val_mae_final", float(mae))
         mlflow.log_metric("val_mse_final", float(mse))
+        y_pred_test = model.predict(x_test).flatten()
+        maeTest = mean_absolute_error(y_test, y_pred_test)
+        mseTest = mean_squared_error(y_test, y_pred_test)
+        rseTest = np.sqrt(mseTest)
+        print("Test MAE:", maeTest)
+        print("Test MSE:", mseTest)
+        print("Test RMSE", rseTest)
+
     mlflow.end_run()
 
     model.save("models/cnn_regression_model.keras")
 
 
-#trainRegressionCNN()
-#trainClassificationCNN()
+trainRegressionCNN()
+trainClassificationCNN()
 #trainClassificationCNNHyperparameters()
