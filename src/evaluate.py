@@ -78,7 +78,7 @@ plt.show()
 
 mlflow.end_run()
 """
-def plot_cnn_learning_curve_for_latest_run():
+def plot_cnn_learning_curve_for_latest_run_classification():
     client = MlflowClient()
     exp = client.get_experiment_by_name("MLflow Classification Tracking")
     if exp is None:
@@ -104,4 +104,32 @@ def plot_cnn_learning_curve_for_latest_run():
     plt.legend()
     plt.show()
 
-plot_cnn_learning_curve_for_latest_run()
+
+def plot_cnn_learning_curve_for_latest_run_regression():
+    client = MlflowClient()
+    exp = client.get_experiment_by_name("MLflow Regression Tracking")
+    if exp is None:
+        print("Experiment 'MLflow Regression Tracking' not found")
+        return
+    runs = client.search_runs([exp.experiment_id], order_by=["attributes.start_time DESC"], max_results=1)
+    if len(runs) == 0:
+        print("No runs found in experiment 'MLflow Regression Tracking'.")
+        return
+    run_id = runs[0].info.run_id
+    print("Using CNN Run Id:", run_id)
+    train_hist = client.get_metric_history(run_id, "train_mae")
+    val_hist = client.get_metric_history(run_id, "val_mae")
+    train_values = [m.value for m in train_hist]
+    val_values = [m.value for m in val_hist]
+    epochs = range(1, len(train_values) + 1)
+    plt.figure()
+    plt.plot(epochs, train_values, label="Train mae")
+    plt.plot(epochs, val_values, label="Validation mae")
+    plt.xlabel("Epoch")
+    plt.ylabel("MAE")
+    plt.title("Plot 1 – Regression NN Learning Curve")
+    plt.legend()
+    plt.show()
+
+plot_cnn_learning_curve_for_latest_run_classification()
+plot_cnn_learning_curve_for_latest_run_regression()

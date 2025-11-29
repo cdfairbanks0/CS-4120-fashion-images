@@ -46,9 +46,7 @@ def getClassificationCNNData():
     X_test, y_test = convertDatasetToArrayCNN(test_data)
 
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
-
-
-    #X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+    
     X_train = X_train / 255.0
     X_val = X_val / 255.0
     X_test = X_test / 255.0
