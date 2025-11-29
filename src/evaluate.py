@@ -1,4 +1,5 @@
 from sklearn.metrics import accuracy_score, classification_report, mean_absolute_error, mean_squared_error
+from sklearn.inspection import permutation_importance
 import matplotlib.pyplot as plt
 import mlflow
 from mlflow.tracking import MlflowClient
@@ -12,19 +13,19 @@ from features import getClassificationCNNData, getRegressionCNNData
 
 
 # Test and prediction sets from training logistic regression model
-y_test, y_pred = trainLogisticRegression()
+X_train, X_validate, y_validate, y_pred, logreg_model = trainLogisticRegression()
 
 # Class labels for Fashion MNIST
 class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat', 'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
 
 # Classification report (precision, recall, f1-score per class) for logistic regression
-report = classification_report(y_test, y_pred, target_names=class_names)
+report = classification_report(y_validate, y_pred, target_names=class_names)
 print(report)
 
 
 def runPlot3ConfusionLogreg():
     logConfusionMatrix(
-        y_test,
+        y_validate,
         y_pred,
         class_names,
         title="Plot 3 – Confusion Matrix (Logistic Regression, Test Set)"
@@ -34,6 +35,30 @@ def runPlot3ConfusionLogreg():
 runPlot3ConfusionLogreg()
 
 
+result = permutation_importance(
+    logreg_model,
+    X_validate,
+    y_validate,
+    n_repeats=3,
+    random_state=42
+)
+
+# Plot results
+importances = result.importances_mean
+importance_map = importances.reshape(28, 28)
+#features = range(len(importances))  # logistic regression uses flattened pixels as features
+
+plt.figure(figsize=(6,5))
+#plt.bar(features, importances)
+plt.imshow(importance_map, cmap='hot')
+plt.colorbar(label="Mean decrease in accuracy")
+plt.title("Plot 5 – Permutation Importance Heatmap (Logistic Regression)")
+plt.xlabel("Image width")
+plt.ylabel("Image height")
+plt.show()
+
+
+
 model = tf.keras.models.load_model("models/cnn_classification_model.keras")
 X_train, X_val, x_test, y_train, CNN_y_val, CNN_y_test = getClassificationCNNData()
 
@@ -41,8 +66,16 @@ CNN_y_pred = model.predict(X_val).argmax(axis=1)
 CNN_y_test_pred = model.predict(x_test).argmax(axis=1)
 #CNN_y_pred, CNN_y_val, CNN_y_test_pred, CNN_y_test = trainClassificationCNN()
 
-report = classification_report(CNN_y_test, CNN_y_test_pred, target_names=class_names)
+report = classification_report(CNN_y_val, CNN_y_pred, target_names=class_names)
+print("classification report CNN classification validation set")
 print(report)
+
+report = classification_report(CNN_y_test, CNN_y_test_pred, target_names=class_names)
+print("classification report CNN classification test set")
+print(report)
+
+
+
 
 
 

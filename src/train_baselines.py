@@ -45,7 +45,7 @@ def trainLogisticRegression():
             name="fashion_mnist_logreg_model",
             input_example=X_train_scaled
         )
-    return y_validate, y_pred
+    return X_train, X_validate, y_validate, y_pred, model
 
 def trainDecisionTreeClassifier():
     mlflow.set_experiment("MLflow Classification Tracking")
